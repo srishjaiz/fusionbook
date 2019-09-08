@@ -4,65 +4,42 @@ import rating from '../components/html/rating'
 
 const ratingStory = new Story('Rating').addMetas([configs()])
 
-var config={};
+var config={
+    svg_width: "1000",
+    svg_height: "100",
+    fill_rated: "#f8f8f8",
+    fill_unrated: "#ff0",    
+    star_strokewidth: "5",
+    orientation: "leftToRight",
+    N: "7",
+    rating_value: "5",
+    padding: "2",
+    stroke_rated: "#878787",
+    stroke_unrated: "#787878",
+    justify: "center"
+}
 
 //create
 
 ratingStory.addChapter(
     'Default rating chart',
     story => {
-        // var a= new rating(story,config);
-        // a.create();
-
         var a= new rating(story,config);
-        config.rating_value=3;
-        a._create();
-        config.noOfStars=2;
-        var bound= a._create.bind(a);
-        setTimeout(bound,3000);
+        a.create();
     },
     [
       notes('This is the default representation of stars with default configuration.')
     ]
   )
-ratingStory.addChapter(
-    'All combined rating chart',
-    story => {
-        // var a= new rating(story,config);
-        // a.create();
 
-        var a= new rating(story,config);
-        config.rating_value=3.5;
-        a._create();
-        //config.rating_value=3.5;
-        config.orientation="RL";
-        var bound= a._create.bind(a);
-        setTimeout(bound,1000);
-        
-        setTimeout(()=>{
-            config.svg_width=200;
-            config.svg_height=500;
-            config.orientation="TB";        
-            bound();
-        },2000);
-        setTimeout(()=>{
-            //debugger;
-            config.orientation="BT";        
-            bound();
-        },3000);
-    },
-    [
-      notes('This is the default representation of stars with default configuration.')
-    ]
-  )
 ratingStory.addChapter(
     'svg height and width, strokewidth, padding, no of stars, rating value can only be a positive number',
     story => {
         config.svg_height="500";
         config.svg_width="700";
         config.star_strokewidth="2";
-        config.padding="5";
-        config.noOfStars="7";
+        config.padding="3";
+        config.N="7";
         config.rating_value="4";
         var a= new rating(story,config);
         a.create();
@@ -78,7 +55,7 @@ ratingStory.addChapter(
         config.svg_width="jkl";
         config.star_strokewidth=null;
         config.padding="";
-        config.noOfStars="xy";
+        config.N="xy";
         config.rating_value="yy";
         var a= new rating(story,config);
         a.create();
@@ -94,7 +71,7 @@ ratingStory.addChapter(
         config.svg_width="-6";
         config.star_strokewidth="-1";
         config.padding="-3";
-        config.noOfStars="-11";
+        config.N="-11";
         config.rating_value="-2";
         var a= new rating(story,config);
         a.create();
@@ -133,9 +110,8 @@ ratingStory.addChapter(
 ratingStory.addChapter(
     'star\'s stroke_rated, stroke_unrated and star\'s fill_rated, fill_unrated cannot be an invalid hex values',
     story => {
-        config.stroke_rated="#nnm";
-        config.fill_rated="#zzz";
-
+        config.star_fill="#nnm";
+        config.star_stroke="#zzz";
         var a= new rating(story,config);
         a.create();
     },
@@ -181,36 +157,44 @@ ratingStory.addChapter(
       notes('This should log error as stroke_rated and stroke_unrated cannot be same color.')
     ]
   )
-
+/*
 //strokewidth fallback
 ratingStory.addChapter(
-    'max strokewidth can be 10% of the size of each star box',
+    'star\'s strokewidth can only be a number between 0 to 10 for size of each star box greater than 50',
     story => {
         config.svg_height="100";
         config.svg_width="100";
-        config.star_strokewidth="100";
-        config.noOfStars="5";
+        config.star_strokewidth="5";
         var a= new rating(story,config);
         a.create();    
     },
     [
-    notes('This should represent the star chart with 10% of the star box strokewidth and as no of star increases the box size decreases hence strokewidth also decreases.')
+      notes('This should give the stars strokewidth of 5.')
     ]
   )
-
-//padding fallback
 ratingStory.addChapter(
-    'max padding can be 10% of the size of each star box',
+    'star\'s strokewidth must be 0 for size of each star box lesser than 50',
     story => {
-        config.svg_height="100";
-        config.svg_width="200";
-        config.padding="500";
-        config.noOfStars="5";
+        config.star_strokewidth="5";
         var a= new rating(story,config);
         a.create();    
     },
     [
-    notes('This should represent the star chart with 10% of the star box padding and as no of star increases the box size decreases hence padding also decreases.')
+      notes('This should give the stars strokewidth of 5.')
+    ]
+  )
+//padding fallback
+ratingStory.addChapter(
+    'padding can must be 10% of the size of each star box greater than 50',
+    story => {
+        config.svg_height="100";
+        config.svg_width="100";
+        config.star_strokewidth="5";
+        var a= new rating(story,config);
+        a.create();    
+    },
+    [
+      notes('This should give the stars strokewidth of 5.')
     ]
   )
 ratingStory.addChapter(
@@ -224,7 +208,6 @@ ratingStory.addChapter(
       notes('This should give the stars strokewidth of 5.')
     ]
   )
-  /*
 //side of star box fallback
 ratingStory.addChapter(
     'side of star box must be greater than 10',
@@ -255,7 +238,7 @@ ratingStory.addChapter(
 ratingStory.addChapter(
     'rating value must not be greater than no of stars, fallback to default',
     story => {
-        config.noOfStars="6";
+        config.N="6";
         config.rating_value="10"
         var a= new rating(story,config);
         a.create(); 
@@ -267,7 +250,7 @@ ratingStory.addChapter(
 ratingStory.addChapter(
     'rating value must be lesser than no of stars',
     story => {
-        config.noOfStars="6";
+        config.N="6";
         config.rating_value="3"
         var a= new rating(story,config);
         a.create(); 
@@ -338,7 +321,7 @@ ratingStory.addChapter(
 ratingStory.addChapter(
     'no of stars cannot be fractional value',
     story => {
-        config.noOfStars="6.6";
+        config.N="6.6";
         var a= new rating(story,config);
         a.create();
     },
@@ -346,17 +329,7 @@ ratingStory.addChapter(
       notes('This should log error as no of stars cannot be fractional value.')
     ]
   )
-ratingStory.addChapter(
-    'no of stars cannot be 0',
-    story => {
-        config.noOfStars="0";
-        var a= new rating(story,config);
-        a.create();
-    },
-    [
-      notes('This should log error as no of stars cannot be 0.')
-    ]
-  )
+
 
 
 
@@ -370,7 +343,7 @@ ratingStory.addChapter(
         config.svg_width="700";
         config.star_strokewidth="2";
         config.padding="3";
-        config.noOfStars="7";
+        config.N="7";
         config.rating_value="4";
         var a= new rating(story,config);
         a.update();
@@ -386,7 +359,7 @@ ratingStory.addChapter(
         config.svg_width="jkl";
         config.star_strokewidth=null;
         config.padding="";
-        config.noOfStars="xy";
+        config.N="xy";
         config.rating_value="yy";
         var a= new rating(story,config);
         a.update();
@@ -402,7 +375,7 @@ ratingStory.addChapter(
         config.svg_width="-6";
         config.star_strokewidth="-1";
         config.padding="-3";
-        config.noOfStars="-11";
+        config.N="-11";
         config.rating_value="-2";
         var a= new rating(story,config);
         a.update();
@@ -441,8 +414,8 @@ ratingStory.addChapter(
 ratingStory.addChapter(
     'star\'s stroke_rated, stroke_unrated and star\'s fill_rated, fill_unrated cannot be an invalid hex values',
     story => {
-        config.fill_rated="#nnm";
-        config.stroke_rated="#zzz";
+        config.star_fill="#nnm";
+        config.star_stroke="#zzz";
         var a= new rating(story,config);
         a.update();
     },
@@ -514,24 +487,31 @@ ratingStory.addChapter(
       notes('This should force update the stars strokewidth to 0.')
     ]
   )
-  */
 //padding fallback
 ratingStory.addChapter(
-    'max padding can be 10% of the size of each star box',
+    'padding can must be 10% of the size of each star box greater than 50',
     story => {
         config.svg_height="100";
-        config.svg_width="200";
-        config.padding="500";
-        config.noOfStars="5";
+        config.svg_width="100";
+        config.star_strokewidth="5";
         var a= new rating(story,config);
         a.update();    
     },
     [
-      notes('This should represent the star chart with 10% of the star box padding and as no of star increases the box size decreases hence padding also decreases.')
+      notes('This should give the stars strokewidth of 5.')
     ]
   )
-
-  /*
+ratingStory.addChapter(
+    'padding must be 0 for size of each star box lesser than 50',
+    story => {
+        config.star_strokewidth="5";
+        var a= new rating(story,config);
+        a.update();    
+    },
+    [
+      notes('This should give the stars strokewidth of 5.')
+    ]
+  )
 //side of star box fallback
 ratingStory.addChapter(
     'side of star box must be greater than 10',
@@ -562,7 +542,7 @@ ratingStory.addChapter(
 ratingStory.addChapter(
     'rating value must not be greater than no of stars, fallback to default',
     story => {
-        config.noOfStars="6";
+        config.N="6";
         config.rating_value="10"
         var a= new rating(story,config);
         a.update(); 
@@ -574,7 +554,7 @@ ratingStory.addChapter(
 ratingStory.addChapter(
     'rating value must be lesser than no of stars',
     story => {
-        config.noOfStars="6";
+        config.N="6";
         config.rating_value="3"
         var a= new rating(story,config);
         a.update(); 
@@ -645,7 +625,7 @@ ratingStory.addChapter(
 ratingStory.addChapter(
     'no of stars cannot be fractional value',
     story => {
-        config.noOfStars="6.6";
+        config.N="6.6";
         var a= new rating(story,config);
         a.update();
     },
