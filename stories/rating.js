@@ -9,7 +9,7 @@ var config={};
 //update
 //stress testing copy
 ratingStory.addChapter(
-  'stress testing',
+  'stress testing, expected output cannot be <200 tests in 5 ms',
   story => {
       config.rating_value= 4.5;
       config.noOfStars= 5;
