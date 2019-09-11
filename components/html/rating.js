@@ -2,9 +2,15 @@ import { func } from "prop-types";
 
 export default class Rating{
     constructor(el,args){
-        this.el=el?el:(console.error("HTML element reference not provided, stopping execution"));
+        
+        if (!(el instanceof HTMLElement)) {
+            console.error("A HTML Element must be provided in the first argument");
+            return null;
+        }
+        this.el = el;
         this.args=args;
         this.svg=document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
         //configurable attributes
         this.svg_height=500;
         this.svg_width=500;
@@ -19,116 +25,151 @@ export default class Rating{
         this.padding=5;
         this.justify_content="center";
         this.align_items="center";
-        //counter variable
+        //internal variable
+        this.stars = [];
         this.creation=true;
-        }
-    
-    _create(){
+
+        this.el.appendChild(this.svg);
+
         var result=this._validate();
-        if(result){
-            if(this.creation){
-                this._setUserAttributes();
-                this.svg.setAttribute("width",this.svg_width);
-                this.svg.setAttribute("height",this.svg_height);
-                this.creation=false;
+        if (result) {
+            this._draw(result);
+        } 
+        else {
+            this.el.removeChild(this.svg);
+            console.error("\nStopping execution");
+            return null;
+        }
+    }
+    update() {
+        var result=this._validate();
+        if (result) {
+            this._draw(result);
+
+        } 
+        else {
+            this.el.removeChild(this.svg);
+            console.error("\nStopping execution");
+            return null;
+        }
+    }
+    _draw(result){
+        if(this.creation){
+            this._setUserAttributes();
+            this.svg.setAttribute("width",this.svg_width);
+            this.svg.setAttribute("height",this.svg_height);
+            this.creation=false;
+        }
+        else{
+            if(this.svg_height!==this.args.svg_height){
+                this.svg.setAttribute("height",this.args.svg_height);
             }
-            else{
-                if(this.svg_height!==this.args.svg_height){
-                    this.svg.setAttribute("height",this.args.svg_height);
-                }
-                if(this.svg_width!==this.args.svg_width){
-                    this.svg.setAttribute("width",this.args.svg_width);
-                }
-                this._setUserAttributes();
-                while (this.svg.hasChildNodes()) {  
-                    this.svg.removeChild(this.svg.firstChild);
-                }
+            if(this.svg_width!==this.args.svg_width){
+                this.svg.setAttribute("width",this.args.svg_width);
             }
-            this.rating_value=String(this.rating_value);
-            var res = this.rating_value.split(".");
-            if(res.length>1){
-                this._putLinerGradient(res,result[1]);
-            }
-            var box=result[0];
-            if(this.orientation=="LR"){
-                for(let i=0;i<this.noOfStars;i++,res[0]--){
-                    var start=((box +(2*i)*box + (this.svg_width - box*this.noOfStars)+ this.star_strokewidth +this.padding) / 2) + " " + ((this.svg_height - box +this.star_strokewidth +this.padding) / 2);
-                    if(res[0]>0){
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
-                    }
-                    else if(res[0]==0 && typeof res[1] !== "undefined"){
-                        var rating_frac=
-                        {   
-                            fill:"url(#rated)",
-                            stroke:"url(#rated_stroke)"
-                        };
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding,rating_frac);
-                    }
-                    else{
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_unrated,this.stroke_unrated,this.svg_width,this.svg_height,start,this.padding);
-                    }
+            this._setUserAttributes();
+        }
+        this.rating_value=String(this.rating_value);
+        var res = this.rating_value.split(".");
+
+        //remove def if exist
+        let defs = this.svg.getElementsByTagName("defs");
+        if (defs.length > 0) {
+            this.svg.removeChild(defs[0]);
+        }
+        if(res.length>1){
+            this._putLinerGradient(res,result[1]);
+        }
+        var box=result[0];
+        var direction=result[1];
+        var currentStars= this.stars.length;
+             
+        for(let i=currentStars;i<this.noOfStars;i++){
+            let star = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+            this.stars.push(star);
+            this.svg.appendChild(star);
+        }
+        for(let i=currentStars;i>this.noOfStars;i--){
+            let star=this.stars.pop();
+            this.svg.removeChild(star);
+        }
+        if(this.orientation=="LR"){
+            for(let i=0;i<this.stars.length;i++,res[0]--){
+                var start=((box +(2*i)*box + (this.svg_width - box*this.noOfStars)+ this.star_strokewidth +this.padding) / 2) + " " + ((this.svg_height - box +this.star_strokewidth +this.padding) / 2);
+                if(res[0]>0){
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
                 }
-            }
-            else if(this.orientation=="RL"){
-                var unrated=this.noOfStars-res[0]-1;
-                for(let i=0;i<this.noOfStars;i++,unrated--){
-                    var start=((box +(2*i)*box + (this.svg_width - box*this.noOfStars)+ this.star_strokewidth +this.padding) / 2) + " " + ((this.svg_height - box +this.star_strokewidth +this.padding) / 2);
-                    if(unrated>0){
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_unrated,this.stroke_unrated,this.svg_width,this.svg_height,start,this.padding);
-                    }
-                    else if(unrated==0 && typeof res[1] != "undefined"){
-                        var rating_frac=
-                        {   
-                            fill:"url(#rated_RL)",
-                            stroke:"url(#rated_stroke_RL)"
-                        };
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding,rating_frac);
-                    }
-                    else{
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
-                    }
+                else if(res[0]==0 && typeof res[1] !== "undefined"){
+                    let rating_frac=
+                    {   
+                        fill:"url(#rated)",
+                        stroke:"url(#rated_stroke)"
+                    };
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding,rating_frac);               
                 }
-            }
-            else if(this.orientation=="TB"){
-                for(let i=0;i<this.noOfStars;i++,res[0]--){
-                    var start=((box + (this.svg_width - box)+ this.star_strokewidth) / 2) + " " + (((2*i)*box +this.svg_height - box*this.noOfStars +this.star_strokewidth) / 2);
-                    if(res[0]>0){
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
-                    }
-                    else if(res[0]==0 && typeof res[1] != "undefined"){
-                        var rating_frac=
-                        {   
-                            fill:"url(#rated_TB)",
-                            stroke:"url(#rated_stroke_TB)"
-                        };
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding,rating_frac);
-                    }
-                    else{
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_unrated,this.stroke_unrated,this.svg_width,this.svg_height,start,this.padding);
-                    }
+                else{
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_unrated,this.stroke_unrated,this.svg_width,this.svg_height,start,this.padding);
                 }
             }
-            else{
-                var unrated=this.noOfStars-res[0]-1;
-                for(let i=0;i<this.noOfStars;i++,unrated--){
-                    var start=((box + (this.svg_width - box)+ this.star_strokewidth) / 2) + " " + (((2*i)*box +this.svg_height - box*this.noOfStars +this.star_strokewidth) / 2);
-                    if(unrated>0){
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_unrated,this.stroke_unrated,this.svg_width,this.svg_height,start,this.padding);
-                    }
-                    else if(unrated==0 && typeof res[1] != "undefined"){
-                        var rating_frac=
-                        {   
-                            fill:"url(#rated_BT)",
-                            stroke:"url(#rated_stroke_BT)"
-                        };
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding,rating_frac);
-                    }
-                    else{
-                        createStar(this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
-                    }
+        }
+        else if(this.orientation=="RL"){
+            let unrated=this.noOfStars-res[0]-1;
+            for(let i=0;i<this.stars.length;i++,unrated--){
+                var start=((box +(2*i)*box + (this.svg_width - box*this.noOfStars)+ this.star_strokewidth +this.padding) / 2) + " " + ((this.svg_height - box +this.star_strokewidth +this.padding) / 2);
+                if(unrated>0){
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_unrated,this.stroke_unrated,this.svg_width,this.svg_height,start,this.padding);
+                }
+                else if(unrated==0 && typeof res[1] !== "undefined"){
+                    let rating_frac=
+                    {   
+                        fill:"url(#rated_RL)",
+                        stroke:"url(#rated_stroke_RL)"
+                    };
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding,rating_frac);               
+                }
+                else{
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
                 }
             }
-            this.el.appendChild(this.svg);
+        }
+        else if(this.orientation=="TB"){
+            for(let i=0;i<this.stars.length;i++,res[0]--){
+                var start=((box + (this.svg_width - box)+ this.star_strokewidth) / 2) + " " + (((2*i)*box +this.svg_height - box*this.noOfStars +this.star_strokewidth) / 2);
+                if(res[0]>0){
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
+                }
+                else if(res[0]==0 && typeof res[1] != "undefined"){
+                    let rating_frac=
+                    {   
+                        fill:"url(#rated_TB)",
+                        stroke:"url(#rated_stroke_TB)"
+                    };
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding,rating_frac);
+                }
+                else{
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_unrated,this.stroke_unrated,this.svg_width,this.svg_height,start,this.padding);
+                }
+            }
+        }
+        else{
+            let unrated=this.noOfStars-res[0]-1;
+            for(let i=0;i<this.stars.length;i++,unrated--){
+                var start=((box + (this.svg_width - box)+ this.star_strokewidth) / 2) + " " + (((2*i)*box +this.svg_height - box*this.noOfStars +this.star_strokewidth) / 2);
+                if(unrated>0){
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_unrated,this.stroke_unrated,this.svg_width,this.svg_height,start,this.padding);
+                }
+                else if(unrated==0 && typeof res[1] != "undefined"){
+                    let rating_frac=
+                    {   
+                        fill:"url(#rated_BT)",
+                        stroke:"url(#rated_stroke_BT)"
+                    };
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding,rating_frac);
+                }
+                else{
+                    createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
+                }
+            }
         }
     }
 
@@ -341,7 +382,7 @@ export default class Rating{
         if(box<10){
             setUserAttributes=false;
             box=0;
-            console.error("Box size is less than 10, stopping execution");
+            console.error("Box size is less than 10");
         }
         else if(box<=80){
             this.args.padding=0;
@@ -364,7 +405,6 @@ export default class Rating{
             return [box,direction];
         }
         else{
-
             return null;
         }
     }
@@ -407,8 +447,7 @@ function setLinearGrad(id,offset,rated,unrated,direction) {
     return linearGrad;
 }
 
-function createStar(svg,box,star_strokewidth,fill_rated,stroke_rated,svg_width,svg_height,start,padding=0,rating_frac){
-    var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+function createStar(newElement,svg,box,star_strokewidth,fill_rated,stroke_rated,svg_width,svg_height,start,padding=0,rating_frac){
     newElement.setAttribute("d",
     "m "+start
     +" l "+ (box*1/8) +" "+ (box*3/8) 
@@ -428,12 +467,12 @@ function createStar(svg,box,star_strokewidth,fill_rated,stroke_rated,svg_width,s
     }
     else{
         //debugger;
-        newElement.style.fill=fill_rated;
-        newElement.style.stroke=stroke_rated; 
+        newElement.setAttribute("fill",fill_rated);
+        newElement.setAttribute("stroke",stroke_rated);
     }
     newElement.style.strokeWidth = star_strokewidth;
     newElement.style.strokeLinejoin="round";
-    svg.appendChild(newElement);
+    // svg.appendChild(newElement);
     }
 //function to check if input is float or not
 function isFloat(n){

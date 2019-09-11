@@ -7,7 +7,30 @@ const ratingStory = new Story('Rating').addMetas([configs()])
 var config={};
 
 //create
+//stress testing copy
+ratingStory.addChapter(
+  'stress testing',
+  story => {
+      config.rating_value= 4.5;
+      config.noOfStars= 5;
+      config.svg_width= 400;
+      let a = new rating(story, config),
+        T = 1, startTime = ((new Date()).getTime() * 1), time = 0;
+        while(time < 100){
+          config.rating_value+=T;
+          config.noOfStars+=T;
+          config.svg_width+=T*100;
+          a.update();
+          time =  ((new Date()).getTime() * 1) - startTime;
+          T++;
+        }
+    console.log(T + ' tests in ' + time + 'ms');
 
+  },
+  [
+    notes('This should log error as no of stars cannot be fractional value.')
+  ]
+)
 ratingStory.addChapter(
     'Default rating chart',
     story => {
@@ -16,9 +39,8 @@ ratingStory.addChapter(
 
         var a= new rating(story,config);
         config.rating_value=3;
-        a._create();
         config.noOfStars=2;
-        var bound= a._create.bind(a);
+        var bound= a.update.bind(a);
         setTimeout(bound,3000);
     },
     [
@@ -30,7 +52,7 @@ ratingStory.addChapter(
     story => {
         // var a= new rating(story,config);
         // a.create();
-
+        config.noOfStars=5;
         var a= new rating(story,config);
         config.rating_value=3.5;
         a._create();
@@ -653,5 +675,28 @@ ratingStory.addChapter(
       notes('This should log error as no of stars cannot be fractional value.')
     ]
   )
+//stress testing
+  ratingStory.addChapter(
+    'stress testing',
+    story => {
+        config.rating_value= 4.5;
+        config.noOfStars= 5;
+        config.svg_width= 400;
+        let a = new rating(story, config),
+          T = 1, startTime = ((new Date()).getTime() * 1), time = 0;
+          while(time < 100){
+            a.update();
+            config.rating_value+=T;
+            config.noOfStars+=T;
+            config.svg_width+=T*100;
+            time =  ((new Date()).getTime() * 1) - startTime;
+            T++;
+          }
+      console.log(T + ' tests in ' + time + 'ms');
 
+    },
+    [
+      notes('This should log error as no of stars cannot be fractional value.')
+    ]
+  )
 export default ratingStory;
