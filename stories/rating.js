@@ -16,7 +16,7 @@ ratingStory.addChapter(
       config.svg_width= 400;
       let a = new rating(story, config),
         T = 1, startTime = ((new Date()).getTime() * 1), time = 0;
-        while(time < 100){
+        while(time < 5){
           config.rating_value+=T;
           config.noOfStars+=T;
           config.svg_width+=T*100;
@@ -38,10 +38,9 @@ ratingStory.addChapter(
         // a.create();
 
         var a= new rating(story,config);
-        config.rating_value=3;
-        config.noOfStars=2;
-        var bound= a.update.bind(a);
-        setTimeout(bound,3000);
+        config.rating_value=3.5;
+        // var bound= a.update.bind(a);
+        // setTimeout(bound,3000);
     },
     [
       notes('This is the default representation of stars with default configuration.')

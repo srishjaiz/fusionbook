@@ -28,12 +28,14 @@ export default class Rating{
         //internal variable
         this.stars = [];
         this.creation=true;
-
         this.el.appendChild(this.svg);
 
         var result=this._validate();
         if (result) {
-            this._draw(result);
+            this.isRAF=true;
+            window.requestAnimationFrame(() => {
+                this._draw(result);
+            });
         } 
         else {
             this.el.removeChild(this.svg);
@@ -44,16 +46,27 @@ export default class Rating{
     update() {
         var result=this._validate();
         if (result) {
-            this._draw(result);
-
-        } 
+            if(!this.isRAF){
+                window.requestAnimationFrame(() => {
+                    this._draw(result);
+                });
+                this.isRAF = true;
+            }
+        }
         else {
             this.el.removeChild(this.svg);
             console.error("\nStopping execution");
             return null;
         }
+        if(typeof this.onUpdate === 'function'){
+            this.onUpdate(this.args);
+        }
+        else if(typeof this.onUpdate !== 'undefined' && typeof this.onUpdate !== 'function'){
+            console.error("onUpdate not a function");
+        }
     }
     _draw(result){
+        this.isRAF=false;
         if(this.creation){
             this._setUserAttributes();
             this.svg.setAttribute("width",this.svg_width);
@@ -81,7 +94,6 @@ export default class Rating{
             this._putLinerGradient(res,result[1]);
         }
         var box=result[0];
-        var direction=result[1];
         var currentStars= this.stars.length;
              
         for(let i=currentStars;i<this.noOfStars;i++){
@@ -170,6 +182,12 @@ export default class Rating{
                     createStar(this.stars[i],this.svg,box,this.star_strokewidth,this.fill_rated,this.stroke_rated,this.svg_width,this.svg_height,start,this.padding);
                 }
             }
+        }
+        if(typeof this.onDraw === 'function'){
+            this.onDraw();
+        }
+        else if(typeof this.onDraw !== 'undefined' && typeof this.onDraw !== 'function'){
+            console.error("onDraw not a function");
         }
     }
 
