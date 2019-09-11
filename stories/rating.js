@@ -11,15 +11,13 @@ var config={};
 ratingStory.addChapter(
   'stress testing, expected output cannot be <200 tests in 5 ms',
   story => {
-      config.rating_value= 4.5;
       config.noOfStars= 5;
       config.svg_width= 400;
       let a = new rating(story, config),
         T = 1, startTime = ((new Date()).getTime() * 1), time = 0;
-        while(time < 5){
-          config.rating_value+=T;
-          config.noOfStars+=T;
-          config.svg_width+=T*100;
+        while(time < 100){
+          config.noOfStars++;
+          config.svg_width+=100;
           a.update();
           time =  ((new Date()).getTime() * 1) - startTime;
           T++;
